@@ -54,6 +54,11 @@ export default function Translator() {
 
       {result && (
         <div className="ns-card p-3 p-lg-4 mb-4">
+          <div className="d-flex justify-content-end mb-2">
+            <span className={`ns-tag ${result.source === 'ai' ? '' : 'ns-tag--muted'}`}>
+              {result.source === 'ai' ? '✨ AI-powered' : '📖 Dictionary'}
+            </span>
+          </div>
           <div className="mb-3">
             <div className="ns-text-muted small fw-semibold mb-1">YOU SAID</div>
             <div>{highlighted(result.input, result.detected)}</div>
