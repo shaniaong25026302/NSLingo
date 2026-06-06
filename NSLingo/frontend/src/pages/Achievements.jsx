@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react'
-import { getBadges } from '../services/api.js'
+import { getBadges, getModules } from '../services/api.js'
+import { useApp } from '../context/AppContext.jsx'
+import { computeBadges } from '../utils/achievements.js'
 import Loader from '../components/Loader.jsx'
 
 export default function Achievements() {
-  const [badges, setBadges] = useState(null)
-  useEffect(() => { getBadges().then(setBadges) }, [])
+  const { progress } = useApp()
+  const [baseBadges, setBaseBadges] = useState(null)
+  const [modules, setModules] = useState([])
 
-  if (!badges) return <Loader label="Loading achievements…" />
+  useEffect(() => {
+    getBadges().then(setBaseBadges)
+    getModules().then((m) => setModules(m || []))
+  }, [])
 
+  if (!baseBadges || !progress) return <Loader label="Loading achievements…" />
+
+  // Unlock state is computed live from the user's progress.
+  const badges = computeBadges(baseBadges, progress, modules)
   const unlocked = badges.filter((b) => b.unlocked).length
 
   return (

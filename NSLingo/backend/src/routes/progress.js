@@ -24,6 +24,7 @@ router.put('/', async (req, res, next) => {
     const allowed = [
       'goal', 'readiness', 'streak', 'totalXp', 'perfectScores',
       'completedModules', 'completedLessons', 'weeklyActivity', 'moduleProgress',
+      'quizScores', 'lastActiveDate',
     ]
     const update = {}
     for (const key of allowed) {

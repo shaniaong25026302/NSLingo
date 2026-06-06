@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { translate, getTranslationExamples } from '../services/api.js'
 
 export default function Translator() {
   const [text, setText] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
-  const examples = getTranslationExamples()
+  const [examples, setExamples] = useState([])
+
+  useEffect(() => {
+    getTranslationExamples().then((ex) => setExamples(ex || []))
+  }, [])
 
   const handleTranslate = async () => {
     if (!text.trim()) return
@@ -54,6 +58,11 @@ export default function Translator() {
 
       {result && (
         <div className="ns-card p-3 p-lg-4 mb-4">
+          <div className="d-flex justify-content-end mb-2">
+            <span className={`ns-tag ${result.source === 'ai' ? '' : 'ns-tag--muted'}`}>
+              {result.source === 'ai' ? '✨ AI-powered' : '📖 Dictionary'}
+            </span>
+          </div>
           <div className="mb-3">
             <div className="ns-text-muted small fw-semibold mb-1">YOU SAID</div>
             <div>{highlighted(result.input, result.detected)}</div>

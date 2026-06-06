@@ -34,7 +34,6 @@ export default function Quiz() {
 
   const q = questions[idx]
   const isLast = idx === questions.length - 1
-  const xpPerQ = 10
 
   const choose = (i) => {
     if (answered) return
@@ -51,8 +50,9 @@ export default function Quiz() {
       return
     }
     const finalScore = score // score already includes current question
-    const earnedXp = finalScore * xpPerQ
-    recordQuiz(moduleId, finalScore, questions.length, earnedXp)
+    // recordQuiz rewards only improvement over the previous best and returns
+    // the XP actually awarded this attempt.
+    const earnedXp = recordQuiz(moduleId, finalScore, questions.length)
     navigate('/results', {
       state: {
         moduleId,
