@@ -1,4 +1,4 @@
-import { NavLink, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 // Light marketing/onboarding navbar. When `step`/`totalSteps` are given,
 // the centre links are replaced by a dot stepper (onboarding flow).
@@ -10,7 +10,7 @@ export default function MarketingNavbar({ step, totalSteps }) {
       <div className="container">
         <Link className="navbar-brand ns-brand" to="/">NSLingo</Link>
 
-        {showStepper ? (
+        {showStepper && (
           <div className="ns-stepper mx-auto" aria-label={`Step ${step + 1} of ${totalSteps}`}>
             {Array.from({ length: totalSteps }).map((_, i) => (
               <span
@@ -19,12 +19,6 @@ export default function MarketingNavbar({ step, totalSteps }) {
               />
             ))}
           </div>
-        ) : (
-          <ul className="navbar-nav mx-auto gap-lg-2">
-            <li className="nav-item"><NavLink className="nav-link" to="/learn">Lessons</NavLink></li>
-            <li className="nav-item"><NavLink className="nav-link" to="/glossary">Glossary</NavLink></li>
-            <li className="nav-item"><NavLink className="nav-link" to="/translator">Translator</NavLink></li>
-          </ul>
         )}
 
         <div className="d-flex align-items-center gap-2">
