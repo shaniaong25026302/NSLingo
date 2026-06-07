@@ -1,0 +1,26 @@
+# Render Blueprint for the NSLingo backend (Express API).
+# Render reads this from the repo root. It pre-fills the settings that
+# usually have to be entered by hand (root dir, build/start commands).
+#
+# Secret values (MONGODB_URI, CORS_ORIGIN) are marked sync:false, so Render
+# prompts you to enter them in the dashboard instead of storing them in git.
+services:
+  - type: web
+    name: nslingo-api
+    runtime: node
+    plan: free
+    rootDir: NSLingo/backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # Your MongoDB Atlas connection string (enter in dashboard — keep secret).
+      - key: MONGODB_URI
+        sync: false
+      # Auto-generated strong secret for signing JWTs.
+      - key: JWT_SECRET
+        generateValue: true
+      # Your Vercel frontend URL, e.g. https://nslingo.vercel.app (no trailing slash).
+      # Enter after the frontend is deployed.
+      - key: CORS_ORIGIN
+        sync: false
