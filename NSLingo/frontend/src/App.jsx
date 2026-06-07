@@ -8,6 +8,7 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import Home from './pages/Home.jsx'
 import ModuleOverview from './pages/ModuleOverview.jsx'
 import Lesson from './pages/Lesson.jsx'
 import Quiz from './pages/Quiz.jsx'
@@ -38,7 +39,7 @@ export default function App() {
 
       {/* In-app screens (dark navbar + sidebar), all protected */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Home />} />
         <Route path="/learn" element={<Dashboard />} />
         <Route path="/module/:moduleId" element={<ModuleOverview />} />
         <Route path="/lesson/:moduleId/:lessonId" element={<Lesson />} />

@@ -9,13 +9,13 @@ export default function Results() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">No results to show.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
 
   const { moduleId, moduleTitle, score, total, xp } = state
-  const backTo = moduleId ? `/module/${moduleId}` : '/dashboard'
+  const backTo = moduleId ? `/module/${moduleId}` : '/learn'
   const pct = Math.round((score / total) * 100)
   const stars = pct === 100 ? 3 : pct >= 67 ? 2 : pct >= 34 ? 1 : 0
 

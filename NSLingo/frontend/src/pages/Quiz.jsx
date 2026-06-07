@@ -27,7 +27,7 @@ export default function Quiz() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">No quiz available for this module yet.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export default function Quiz() {
   return (
     <div className="container-fluid px-0" style={{ maxWidth: 680 }}>
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <Link to="/dashboard" className="ns-text-muted small">← {moduleTitle}</Link>
+        <Link to={`/module/${moduleId}`} className="ns-text-muted small">← {moduleTitle}</Link>
         <span className="ns-tag ns-tag--muted">Question {idx + 1} / {questions.length}</span>
       </div>
 

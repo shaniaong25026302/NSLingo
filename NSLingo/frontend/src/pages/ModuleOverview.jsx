@@ -18,7 +18,7 @@ export default function ModuleOverview() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">Module not found.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
@@ -28,7 +28,7 @@ export default function ModuleOverview() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">🔒 Finish the previous module to unlock {module.title}.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
@@ -40,7 +40,7 @@ export default function ModuleOverview() {
 
   return (
     <div className="container-fluid px-0" style={{ maxWidth: 760 }}>
-      <Link to="/dashboard" className="ns-text-muted small d-inline-block mb-3">← Learning Path</Link>
+      <Link to="/learn" className="ns-text-muted small d-inline-block mb-3">← Learning Path</Link>
 
       <div className="ns-pagehead">
         <div className="d-flex align-items-center gap-2 flex-wrap">
