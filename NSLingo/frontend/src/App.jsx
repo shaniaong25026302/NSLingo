@@ -8,6 +8,7 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import ModuleOverview from './pages/ModuleOverview.jsx'
 import Lesson from './pages/Lesson.jsx'
 import Quiz from './pages/Quiz.jsx'
 import Results from './pages/Results.jsx'
@@ -39,6 +40,7 @@ export default function App() {
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/learn" element={<Dashboard />} />
+        <Route path="/module/:moduleId" element={<ModuleOverview />} />
         <Route path="/lesson/:moduleId/:lessonId" element={<Lesson />} />
         <Route path="/quiz/:moduleId" element={<Quiz />} />
         <Route path="/results" element={<Results />} />

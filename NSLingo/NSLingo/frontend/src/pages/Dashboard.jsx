@@ -34,6 +34,8 @@ export default function Dashboard() {
           const unlocked = isModuleUnlocked(m.id)
           const pct = progress.moduleProgress[m.id] ?? 0
           const done = pct === 100
+          // Jump to the first lesson the user hasn't finished yet, so modules progress past lesson 1.
+          const nextLesson = m.lessons.find((l) => !(progress.completedLessons || []).includes(l.id)) || m.lessons[0]
 
           const inner = (
             <div className={`ns-card ns-module ${unlocked ? 'ns-card--interactive' : 'ns-module--locked'}`}>
@@ -57,7 +59,7 @@ export default function Dashboard() {
           )
 
           return unlocked ? (
-            <Link key={m.id} to={`/module/${m.id}`} className="text-reset text-decoration-none">
+            <Link key={m.id} to={`/lesson/${m.id}/${nextLesson.id}`} className="text-reset text-decoration-none">
               {inner}
             </Link>
           ) : (
