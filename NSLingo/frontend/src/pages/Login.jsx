@@ -65,10 +65,6 @@ export default function Login() {
           {busy ? 'Logging in…' : 'Log In'}
         </button>
       </form>
-
-      <div className="ns-text-muted small mt-3 text-center">
-        Demo account: <code>demo@nslingo.sg</code> / <code>demo1234</code>
-      </div>
     </AuthCard>
   )
 }
