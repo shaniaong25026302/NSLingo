@@ -29,7 +29,6 @@ export default function Landing() {
             </p>
             <div className="d-flex flex-wrap gap-2">
               <Link to="/register" className="btn btn-primary btn-lg px-4">Get Started — it's free</Link>
-              <Link to="/login" className="btn btn-outline-primary btn-lg px-4">Log In</Link>
             </div>
           </div>
           <div className="col-lg-5">
@@ -78,9 +77,6 @@ export default function Landing() {
                 </div>
               </div>
             ))}
-          </div>
-          <div className="text-center mt-4">
-            <Link to="/register" className="btn btn-primary btn-lg px-5">Start Learning</Link>
           </div>
         </div>
       </section>

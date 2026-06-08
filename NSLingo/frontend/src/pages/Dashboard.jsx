@@ -57,7 +57,7 @@ export default function Dashboard() {
           )
 
           return unlocked ? (
-            <Link key={m.id} to={`/lesson/${m.id}/${m.lessons[0].id}`} className="text-reset text-decoration-none">
+            <Link key={m.id} to={`/module/${m.id}`} className="text-reset text-decoration-none">
               {inner}
             </Link>
           ) : (

@@ -81,6 +81,10 @@ const userProgressSchema = new Schema(
     completedLessons: { type: [String], default: [] },
     weeklyActivity: { type: [Number], default: [0, 0, 0, 0, 0, 0, 0] },
     moduleProgress: { type: Schema.Types.Mixed, default: {} },
+    // Best score per module quiz, e.g. { 'basic-commands': 3 } — prevents XP farming on retries.
+    quizScores: { type: Schema.Types.Mixed, default: {} },
+    // 'YYYY-MM-DD' of the user's last XP-earning activity — drives the streak.
+    lastActiveDate: { type: String, default: null },
   },
   { timestamps: true }
 )

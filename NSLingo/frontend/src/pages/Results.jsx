@@ -9,12 +9,13 @@ export default function Results() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">No results to show.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
 
-  const { moduleTitle, score, total, xp } = state
+  const { moduleId, moduleTitle, score, total, xp } = state
+  const backTo = moduleId ? `/module/${moduleId}` : '/learn'
   const pct = Math.round((score / total) * 100)
   const stars = pct === 100 ? 3 : pct >= 67 ? 2 : pct >= 34 ? 1 : 0
 
@@ -44,7 +45,7 @@ export default function Results() {
 
         <div className="d-flex flex-column flex-sm-row gap-2 justify-content-center">
           <button className="btn btn-outline-primary px-4" onClick={() => navigate(-1)}>Retry Quiz</button>
-          <Link to="/dashboard" className="btn btn-primary px-4">Continue Learning</Link>
+          <Link to={backTo} className="btn btn-primary px-4">Continue Learning</Link>
         </div>
       </div>
     </div>
