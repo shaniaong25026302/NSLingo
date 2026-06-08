@@ -147,8 +147,10 @@ export async function translate(text) {
   return data
 }
 
-export function getTranslationExamples() {
-  return translationExamples
+export async function getTranslationExamples() {
+  if (USING_MOCK) return mock(translationExamples, 0)
+  const { data } = await client.get('/translate/examples')
+  return data
 }
 
 /* ---------- Progress (protected — requires JWT) ---------- */

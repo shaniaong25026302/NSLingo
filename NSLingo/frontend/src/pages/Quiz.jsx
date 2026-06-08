@@ -27,14 +27,13 @@ export default function Quiz() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">No quiz available for this module yet.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
 
   const q = questions[idx]
   const isLast = idx === questions.length - 1
-  const xpPerQ = 10
 
   const choose = (i) => {
     if (answered) return
@@ -51,8 +50,9 @@ export default function Quiz() {
       return
     }
     const finalScore = score // score already includes current question
-    const earnedXp = finalScore * xpPerQ
-    recordQuiz(moduleId, finalScore, questions.length, earnedXp)
+    // recordQuiz rewards only improvement over the previous best and returns
+    // the XP actually awarded this attempt.
+    const earnedXp = recordQuiz(moduleId, finalScore, questions.length)
     navigate('/results', {
       state: {
         moduleId,
@@ -74,7 +74,7 @@ export default function Quiz() {
   return (
     <div className="container-fluid px-0" style={{ maxWidth: 680 }}>
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <Link to="/dashboard" className="ns-text-muted small">← {moduleTitle}</Link>
+        <Link to={`/module/${moduleId}`} className="ns-text-muted small">← {moduleTitle}</Link>
         <span className="ns-tag ns-tag--muted">Question {idx + 1} / {questions.length}</span>
       </div>
 

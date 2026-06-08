@@ -23,7 +23,7 @@ export default function Lesson() {
     return (
       <div className="text-center py-5">
         <p className="ns-text-muted">Lesson not found.</p>
-        <Link to="/dashboard" className="btn btn-primary">Back to Learning Path</Link>
+        <Link to="/learn" className="btn btn-primary">Back to Learning Path</Link>
       </div>
     )
   }
@@ -31,17 +31,26 @@ export default function Lesson() {
   const total = lesson.cards.length
   const card = lesson.cards[idx]
   const isLast = idx === total - 1
+  // The next lesson in this module, if any (undefined when this is the last lesson).
+  const lessonIndex = module.lessons.findIndex((l) => l.id === lessonId)
+  const nextLesson = module.lessons[lessonIndex + 1]
+
+  // On a lesson switch, idx is briefly stale and can point past the new lesson's cards.
+  // Skip rendering for that one frame instead of crashing (the effect below resets idx to 0).
+  if (!card) return <Loader />
 
   const handleNext = () => {
     if (!isLast) { setIdx((i) => i + 1); return }
-    // Finished the cards → record completion, head to the quiz.
+    // Finished this lesson's cards → record completion.
     completeLesson(moduleId, lessonId, lesson.xp)
-    navigate(`/quiz/${moduleId}`)
+    // If there's another lesson in this module, go to it; only the last lesson leads to the quiz.
+    if (nextLesson) navigate(`/lesson/${moduleId}/${nextLesson.id}`)
+    else navigate(`/quiz/${moduleId}`)
   }
 
   return (
     <div className="container-fluid px-0" style={{ maxWidth: 680 }}>
-      <Link to="/dashboard" className="ns-text-muted small d-inline-block mb-3">← {module.title}</Link>
+      <Link to={`/module/${moduleId}`} className="ns-text-muted small d-inline-block mb-3">← {module.title}</Link>
 
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h1 className="h4 ns-section-title mb-0">{lesson.title}</h1>
@@ -76,7 +85,7 @@ export default function Lesson() {
           Previous
         </button>
         <button className="btn btn-primary px-4" onClick={handleNext}>
-          {isLast ? 'Start Quiz 🎯' : 'Next'}
+          {isLast ? (nextLesson ? 'Next Lesson →' : 'Start Quiz 🎯') : 'Next'}
         </button>
       </div>
     </div>

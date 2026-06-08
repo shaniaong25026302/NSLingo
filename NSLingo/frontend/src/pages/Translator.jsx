@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { translate, getTranslationExamples } from '../services/api.js'
 
 export default function Translator() {
   const [text, setText] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
-  const examples = getTranslationExamples()
+  const [examples, setExamples] = useState([])
+
+  useEffect(() => {
+    getTranslationExamples().then((ex) => setExamples(ex || []))
+  }, [])
 
   const handleTranslate = async () => {
     if (!text.trim()) return

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getModules, getBadges } from '../services/api.js'
 import { useApp } from '../context/AppContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { computeBadges } from '../utils/achievements.js'
 import Loader from '../components/Loader.jsx'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -20,6 +21,9 @@ export default function Profile() {
   }, [])
 
   if (!progress || !modules || !badges) return <Loader label="Loading profile…" />
+
+  // Unlock state is computed live from the user's progress.
+  const computedBadges = computeBadges(badges, progress, modules)
 
   const maxActivity = Math.max(...progress.weeklyActivity, 1)
   const displayName = user?.name || 'NS Recruit'
@@ -100,7 +104,7 @@ export default function Profile() {
       <div className="ns-card p-3 p-lg-4">
         <h2 className="h6 fw-bold mb-3">Achievements</h2>
         <div className="row g-3">
-          {badges.map((b) => (
+          {computedBadges.map((b) => (
             <div className="col-4 col-md-3 col-lg-2" key={b.id}>
               <div className={`ns-badge-tile h-100 ${b.unlocked ? 'ns-badge-tile--unlocked' : 'ns-badge-tile--locked'}`}>
                 <div className="ns-badge-tile__emoji">{b.unlocked ? b.emoji : '🔒'}</div>
