@@ -10,7 +10,7 @@
    ============================================================ */
 import { Router } from 'express'
 import mongoose from 'mongoose'
-import { ForumPost, Comment, Vote, Report } from '../models/index.js'
+import { ForumPost, Comment, Vote, Report, User } from '../models/index.js'
 import { requireAuth, requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
@@ -91,6 +91,20 @@ router.get('/posts', async (req, res, next) => {
       total,
       hasMore: page * limit < total,
     })
+  } catch (e) { next(e) }
+})
+
+// GET /api/posts/mine — list the posts created by the current user (newest
+// first). NOTE: this MUST be declared before "/posts/:id" below, otherwise
+// Express would treat "mine" as a post id.
+router.get('/posts/mine', async (req, res, next) => {
+  try {
+    const posts = await ForumPost.find({ author: req.userId })
+      .sort({ createdAt: -1 })
+      .populate('author', 'name email')
+      .lean()
+    const votedIds = await votedTargetIds('post', posts.map((p) => p._id), req.userId)
+    res.json(posts.map((p) => ({ ...p, hasVoted: votedIds.has(String(p._id)) })))
   } catch (e) { next(e) }
 })
 
@@ -275,16 +289,28 @@ router.get('/reports', requireAdmin, async (req, res, next) => {
    ADMIN content removal
    ============================================================ */
 
-// DELETE /api/posts/:id — ADMIN only: remove a post and everything attached
-// to it (its comments, and all votes/reports pointing at the post or those
-// comments) so nothing is left dangling.
-router.delete('/posts/:id', requireAdmin, async (req, res, next) => {
+// DELETE /api/posts/:id — remove a post and everything attached to it (its
+// comments, and all votes/reports pointing at the post or those comments) so
+// nothing is left dangling.
+//
+// Who can delete: the post's OWN author (manage their own content), OR an
+// admin (reactive moderation). Anyone else gets 403.
+router.delete('/posts/:id', async (req, res, next) => {
   try {
     const { id } = req.params
     if (!isValidId(id)) return res.status(404).json({ error: 'Post not found' })
 
     const post = await ForumPost.findById(id)
     if (!post) return res.status(404).json({ error: 'Post not found' })
+
+    // Allow the author themselves; otherwise the requester must be an admin.
+    const isOwner = String(post.author) === String(req.userId)
+    if (!isOwner) {
+      const user = await User.findById(req.userId).select('isAdmin').lean()
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'You can only delete your own posts' })
+      }
+    }
 
     const comments = await Comment.find({ post: id }).select('_id').lean()
     const commentIds = comments.map((c) => c._id)
@@ -301,15 +327,26 @@ router.delete('/posts/:id', requireAdmin, async (req, res, next) => {
   } catch (e) { next(e) }
 })
 
-// DELETE /api/comments/:id — ADMIN only: remove a comment. If it's a top-level
-// comment we also remove its replies. The post's commentCount is adjusted.
-router.delete('/comments/:id', requireAdmin, async (req, res, next) => {
+// DELETE /api/comments/:id — remove a comment. If it's a top-level comment we
+// also remove its replies. The post's commentCount is adjusted.
+//
+// Who can delete: the comment's OWN author, OR an admin (moderation).
+router.delete('/comments/:id', async (req, res, next) => {
   try {
     const { id } = req.params
     if (!isValidId(id)) return res.status(404).json({ error: 'Comment not found' })
 
     const comment = await Comment.findById(id)
     if (!comment) return res.status(404).json({ error: 'Comment not found' })
+
+    // Allow the author themselves; otherwise the requester must be an admin.
+    const isOwner = String(comment.author) === String(req.userId)
+    if (!isOwner) {
+      const user = await User.findById(req.userId).select('isAdmin').lean()
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'You can only delete your own comments' })
+      }
+    }
 
     // Gather the comment + any replies to it (only top-level comments have replies).
     const replies = await Comment.find({ parentComment: id }).select('_id').lean()

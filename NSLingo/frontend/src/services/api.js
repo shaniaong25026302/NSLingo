@@ -327,3 +327,54 @@ export async function report(targetType, targetId, reason) {
   const { data } = await client.post('/api/report', { targetType, targetId, reason })
   return data
 }
+
+/* ----- "My posts": list and delete your own posts ----- */
+export async function getMyPosts() {
+  if (USING_MOCK) {
+    const db = readForum()
+    const me = mockUserName()
+    const mine = db.posts
+      .filter((p) => p.author?.email === me.email && p.author?.name === me.name)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map((p) => ({ ...p, hasVoted: db.votes.includes(`post:${p._id}`) }))
+    return mock(mine)
+  }
+  const { data } = await client.get('/api/posts/mine')
+  return data
+}
+
+export async function deletePost(id) {
+  if (USING_MOCK) {
+    const db = readForum()
+    // Remove the post, its comments, and any votes pointing at them.
+    const commentIds = db.comments.filter((c) => c.post === id).map((c) => c._id)
+    db.posts = db.posts.filter((p) => p._id !== id)
+    db.comments = db.comments.filter((c) => c.post !== id)
+    db.votes = db.votes.filter(
+      (k) => k !== `post:${id}` && !commentIds.includes(k.replace('comment:', ''))
+    )
+    writeForum(db)
+    return mock({ ok: true }, 0)
+  }
+  const { data } = await client.delete(`/api/posts/${id}`)
+  return data
+}
+
+export async function deleteComment(id) {
+  if (USING_MOCK) {
+    const db = readForum()
+    const comment = db.comments.find((c) => c._id === id)
+    if (!comment) throw new Error('Comment not found')
+    // A top-level comment takes its replies with it.
+    const removeIds = [id, ...db.comments.filter((c) => c.parentComment === id).map((c) => c._id)]
+    db.comments = db.comments.filter((c) => !removeIds.includes(c._id))
+    db.votes = db.votes.filter((k) => !removeIds.includes(k.replace('comment:', '')))
+    // Keep the post's comment count in sync.
+    const post = db.posts.find((p) => p._id === comment.post)
+    if (post) post.commentCount = Math.max(0, post.commentCount - removeIds.length)
+    writeForum(db)
+    return mock({ ok: true, removed: removeIds.length }, 0)
+  }
+  const { data } = await client.delete(`/api/comments/${id}`)
+  return data
+}

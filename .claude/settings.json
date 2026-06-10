@@ -11,7 +11,8 @@
       "Bash(curl -s -o NUL -w \"local /health -> %{http_code}\\\\n\" http://localhost:4000/health --max-time 3)",
       "Bash(node -e \"require\\('dotenv'\\).config\\(\\); for \\(const k of ['MONGODB_URI','JWT_SECRET','CORS_ORIGIN','PORT']\\) console.log\\(k, process.env[k] ? 1 : 0\\)\")",
       "Bash(curl -s -o NUL -w \"%{http_code}\\\\n\" http://localhost:4000/api/posts --max-time 3)",
-      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(process.env.CORS_ORIGIN\\)\")"
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(process.env.CORS_ORIGIN\\)\")",
+      "Bash(node --input-type=module -e \"import\\('./src/routes/forum.js'\\).then\\(\\(\\)=>console.log\\('BACKEND OK'\\)\\).catch\\(e=>{console.error\\(e.message\\);process.exit\\(1\\)}\\)\")"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { getPost, addComment, vote, report, FORUM_TOPICS } from '../services/api.js'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { getPost, addComment, vote, report, deletePost, deleteComment, FORUM_TOPICS } from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import Loader from '../components/Loader.jsx'
 
 const topicLabel = (value) =>
@@ -67,6 +68,30 @@ function ReportButton({ targetType, targetId }) {
   )
 }
 
+/* A "delete my comment" button. Deleting a top-level comment also removes its
+   replies (handled on the server). After it succeeds we refresh the thread. */
+function DeleteCommentButton({ commentId, onDeleted }) {
+  const [busy, setBusy] = useState(false)
+
+  const handle = async () => {
+    if (!window.confirm('Delete this comment? Any replies to it are removed too.')) return
+    setBusy(true)
+    try {
+      await deleteComment(commentId)
+      onDeleted()
+    } catch (err) {
+      window.alert(err?.message || 'Could not delete the comment.')
+      setBusy(false)
+    }
+  }
+
+  return (
+    <button className="btn btn-link btn-sm p-0 ns-report-link" onClick={handle} disabled={busy}>
+      {busy ? 'Deleting…' : '🗑 Delete'}
+    </button>
+  )
+}
+
 /* A box for writing a comment or a reply.
    `parentComment` is null for a top-level comment, or a comment id for a reply. */
 function CommentBox({ postId, parentComment = null, placeholder, onAdded }) {
@@ -105,8 +130,11 @@ function CommentBox({ postId, parentComment = null, placeholder, onAdded }) {
 
 export default function ForumPostDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [post, setPost] = useState(null)
   const [error, setError] = useState('')
+  const [deleting, setDeleting] = useState(false)
   // Tracks which top-level comment currently has its reply box open.
   const [replyingTo, setReplyingTo] = useState(null)
 
@@ -119,6 +147,25 @@ export default function ForumPostDetail() {
   }, [id])
 
   useEffect(() => { load() }, [load])
+
+  // Is the logged-in user the author of this post? (We match on email, which
+  // the API returns with the populated author.) Only then show the Delete button.
+  const isOwner = post && user && post.author?.email === user.email
+
+  // True when the logged-in user wrote a given comment/reply (matched by email).
+  const ownsComment = (c) => user && c.author?.email === user.email
+
+  const handleDeletePost = async () => {
+    if (!window.confirm('Delete this post and all its comments? This cannot be undone.')) return
+    setDeleting(true)
+    try {
+      await deletePost(post._id)
+      navigate('/forum')
+    } catch (err) {
+      window.alert(err?.message || 'Could not delete the post. Please try again.')
+      setDeleting(false)
+    }
+  }
 
   if (error) {
     return (
@@ -149,6 +196,16 @@ export default function ForumPostDetail() {
         <div className="d-flex align-items-center gap-3 mt-3">
           <UpvoteButton targetType="post" targetId={post._id} upvotes={post.upvotes} hasVoted={post.hasVoted} />
           <ReportButton targetType="post" targetId={post._id} />
+          {/* Only the post's own author sees a Delete button. */}
+          {isOwner && (
+            <button
+              className="btn btn-link btn-sm p-0 ns-report-link ms-auto"
+              onClick={handleDeletePost}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : '🗑 Delete'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -177,6 +234,7 @@ export default function ForumPostDetail() {
                 ↩ Reply
               </button>
               <ReportButton targetType="comment" targetId={c._id} />
+              {ownsComment(c) && <DeleteCommentButton commentId={c._id} onDeleted={load} />}
             </div>
 
             {/* Reply composer for this comment */}
@@ -200,6 +258,7 @@ export default function ForumPostDetail() {
                     <div className="d-flex align-items-center gap-3 mt-2">
                       <UpvoteButton targetType="comment" targetId={r._id} upvotes={r.upvotes} hasVoted={r.hasVoted} />
                       <ReportButton targetType="comment" targetId={r._id} />
+                      {ownsComment(r) && <DeleteCommentButton commentId={r._id} onDeleted={load} />}
                     </div>
                   </div>
                 ))}

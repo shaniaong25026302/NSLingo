@@ -40,7 +40,10 @@ export default function Forum() {
           <h1 className="h3">Community Forum</h1>
           <p className="mb-0">Share your NS experiences — stories, BMT tips, vocation life and more.</p>
         </div>
-        <Link to="/forum/new" className="btn btn-primary">+ New Post</Link>
+        <div className="d-flex gap-2">
+          <Link to="/forum/mine" className="btn btn-outline-primary">My Posts</Link>
+          <Link to="/forum/new" className="btn btn-primary">+ New Post</Link>
+        </div>
       </div>
 
       {/* Sort toggle (New / Top) */}
