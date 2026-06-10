@@ -8,7 +8,6 @@ const LINKS = [
   { to: '/glossary', icon: '📖', label: 'Glossary' },
   { to: '/forum', icon: '💬', label: 'Forum' },
   { to: '/achievements', icon: '🏆', label: 'Achievements' },
-  { to: '/profile', icon: '👤', label: 'Profile' },
 ]
 
 export default function Sidebar() {
