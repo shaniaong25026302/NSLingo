@@ -15,6 +15,9 @@ import Quiz from './pages/Quiz.jsx'
 import Results from './pages/Results.jsx'
 import Glossary from './pages/Glossary.jsx'
 import Translator from './pages/Translator.jsx'
+import Forum from './pages/Forum.jsx'
+import NewPost from './pages/NewPost.jsx'
+import ForumPostDetail from './pages/ForumPostDetail.jsx'
 import Achievements from './pages/Achievements.jsx'
 import Profile from './pages/Profile.jsx'
 import NotFound from './pages/NotFound.jsx'
@@ -47,6 +50,11 @@ export default function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/glossary" element={<Glossary />} />
         <Route path="/translator" element={<Translator />} />
+        {/* Community forum — /forum/new must come BEFORE /forum/:id so "new"
+            isn't treated as a post id. */}
+        <Route path="/forum" element={<Forum />} />
+        <Route path="/forum/new" element={<NewPost />} />
+        <Route path="/forum/:id" element={<ForumPostDetail />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/profile" element={<Profile />} />
       </Route>

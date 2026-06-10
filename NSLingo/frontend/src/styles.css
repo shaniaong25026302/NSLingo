@@ -290,4 +290,34 @@ a { text-decoration: none; }
 
 /* Utility */
 .ns-divider { height: 1px; background: var(--ns-border); border: 0; margin: 1.25rem 0; }
+
+/* ============================================================
+   Community Forum
+   ============================================================ */
+/* Topic filter chips — built on .ns-tag but clickable + toggleable. */
+.ns-forum-chip {
+  border: 1px solid transparent; cursor: pointer;
+  background: var(--ns-sand-tint); color: var(--ns-muted);
+}
+.ns-forum-chip:hover { border-color: var(--ns-primary); color: var(--ns-primary-dark); }
+.ns-forum-chip--on { background: var(--ns-primary-tint); color: var(--ns-primary-dark); border-color: var(--ns-primary); }
+
+/* Upvote button — pill that fills in when the user has voted. */
+.ns-vote {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .25rem .7rem; border-radius: var(--ns-radius-pill);
+  border: 1px solid var(--ns-border); background: var(--ns-card);
+  color: var(--ns-ink); font-size: .85rem; cursor: pointer;
+  transition: background var(--ns-transition), border-color var(--ns-transition);
+}
+.ns-vote:hover { border-color: var(--ns-primary); }
+.ns-vote--on { background: var(--ns-primary-tint); border-color: var(--ns-primary); color: var(--ns-primary-dark); }
+.ns-vote:disabled { opacity: .6; cursor: default; }
+
+/* Plain text-style buttons for "Reply" / "Report". */
+.ns-report-link { color: var(--ns-muted); text-decoration: none; font-weight: 500; }
+.ns-report-link:hover { color: var(--ns-primary-dark); }
+
+/* Indent for replies + reply composer (the one allowed level of nesting). */
+.ns-reply { margin-left: 1.25rem; padding-left: 1rem; border-left: 2px solid var(--ns-border); }
 .cursor-pointer { cursor: pointer; }

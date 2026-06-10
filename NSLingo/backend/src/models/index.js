@@ -64,6 +64,11 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     name: String,
+    // Simple admin flag used to gate forum moderation routes (list reports,
+    // delete content). There was no existing role system, so this is the
+    // "simple check" — set isAdmin: true on a user in MongoDB to make them
+    // a moderator. (Flagged to the team — see requireAdmin in middleware/auth.js.)
+    isAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
 )
@@ -89,6 +94,73 @@ const userProgressSchema = new Schema(
   { timestamps: true }
 )
 
+/* ============================================================
+   COMMUNITY FORUM MODELS
+   Users post & discuss NS experiences. Posts publish immediately
+   (no approval queue); moderation is reactive (users report,
+   admins remove). Comments allow exactly ONE level of nesting.
+   ============================================================ */
+
+/* ---------- forumPosts ---------- */
+const forumPostSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    body: { type: String, required: true },
+    author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    // Which corner of NS life the post is about.
+    topic: {
+      type: String,
+      enum: ['stories', 'bmt', 'vocation', 'tips', 'general'],
+      default: 'general',
+    },
+    // Denormalised counts so the feed doesn't have to count rows every load.
+    upvotes: { type: Number, default: 0 },
+    commentCount: { type: Number, default: 0 },
+  },
+  { timestamps: true } // adds createdAt + updatedAt
+)
+
+/* ---------- comments ---------- */
+const commentSchema = new Schema(
+  {
+    post: { type: Schema.Types.ObjectId, ref: 'ForumPost', required: true, index: true },
+    author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    body: { type: String, required: true },
+    // null  => top-level comment.
+    // set   => a reply to that comment. We only ever allow ONE level, so a
+    //          reply's parentComment always points at a top-level comment.
+    parentComment: { type: Schema.Types.ObjectId, ref: 'Comment', default: null },
+    upvotes: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+)
+
+/* ---------- votes ----------
+   One row per (user, target). Works for both posts and comments.
+   The unique compound index makes it impossible to double-vote: a second
+   insert for the same trio throws, so a user can only ever hold one vote. */
+const voteSchema = new Schema(
+  {
+    targetType: { type: String, enum: ['post', 'comment'], required: true },
+    targetId: { type: Schema.Types.ObjectId, required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  },
+  { timestamps: true }
+)
+voteSchema.index({ targetType: 1, targetId: 1, user: 1 }, { unique: true })
+
+/* ---------- reports ----------
+   A user flags a post/comment for a moderator to review. */
+const reportSchema = new Schema(
+  {
+    targetType: { type: String, enum: ['post', 'comment'], required: true },
+    targetId: { type: Schema.Types.ObjectId, required: true },
+    reporter: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    reason: { type: String, default: '' },
+  },
+  { timestamps: true }
+)
+
 export const DictionaryTerm = model('DictionaryTerm', dictionaryTermSchema)
 export const Module = model('Module', moduleSchema)
 export const QuizQuestion = model('QuizQuestion', quizQuestionSchema)
@@ -96,3 +168,9 @@ export const TranslationExample = model('TranslationExample', translationExample
 export const Badge = model('Badge', badgeSchema)
 export const User = model('User', userSchema)
 export const UserProgress = model('UserProgress', userProgressSchema)
+
+// Community forum
+export const ForumPost = model('ForumPost', forumPostSchema)
+export const Comment = model('Comment', commentSchema)
+export const Vote = model('Vote', voteSchema)
+export const Report = model('Report', reportSchema)

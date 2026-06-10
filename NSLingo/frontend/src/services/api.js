@@ -178,3 +178,152 @@ export async function getBadges() {
   const { data } = await client.get('/badges')
   return data
 }
+
+/* ============================================================
+   COMMUNITY FORUM
+   Talks to the Express forum routes (/api/posts, /api/vote, ...).
+   In mock mode (no VITE_API_BASE_URL) everything is stored in
+   localStorage so the forum still works when running the frontend
+   on its own. The shapes returned here mirror the real API.
+   ============================================================ */
+export const FORUM_TOPICS = [
+  { value: 'stories', label: 'Stories' },
+  { value: 'bmt', label: 'BMT' },
+  { value: 'vocation', label: 'Vocation Life' },
+  { value: 'tips', label: 'Tips' },
+  { value: 'general', label: 'General' },
+]
+
+/* ----- mock-mode storage helpers (only used when USING_MOCK) ----- */
+const FORUM_KEY = 'ns_forum'
+function readForum() {
+  const raw = localStorage.getItem(FORUM_KEY)
+  if (raw) return JSON.parse(raw)
+  return { posts: [], comments: [], votes: [] } // votes: ["post:<id>", "comment:<id>"]
+}
+function writeForum(db) {
+  localStorage.setItem(FORUM_KEY, JSON.stringify(db))
+}
+function mockUserName() {
+  const u = getStoredUser()
+  return { name: u?.name || u?.email || 'You', email: u?.email || '' }
+}
+// Tiny unique-id generator for mock posts/comments.
+function mockId() {
+  return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
+}
+
+/* ----- Posts ----- */
+export async function getPosts({ topic, sort = 'new', page = 1, limit = 10 } = {}) {
+  if (USING_MOCK) {
+    const db = readForum()
+    let posts = db.posts.slice()
+    if (topic) posts = posts.filter((p) => p.topic === topic)
+    posts.sort((a, b) =>
+      sort === 'top'
+        ? b.upvotes - a.upvotes || new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(b.createdAt) - new Date(a.createdAt)
+    )
+    const total = posts.length
+    const start = (page - 1) * limit
+    const pageItems = posts.slice(start, start + limit).map((p) => ({
+      ...p,
+      hasVoted: db.votes.includes(`post:${p._id}`),
+    }))
+    return mock({ posts: pageItems, page, limit, total, hasMore: start + limit < total })
+  }
+  const { data } = await client.get('/api/posts', { params: { topic, sort, page, limit } })
+  return data
+}
+
+export async function getPost(id) {
+  if (USING_MOCK) {
+    const db = readForum()
+    const post = db.posts.find((p) => p._id === id)
+    if (!post) throw new Error('Post not found')
+    const all = db.comments.filter((c) => c.post === id)
+    const tag = (c) => ({ ...c, hasVoted: db.votes.includes(`comment:${c._id}`) })
+    const topLevel = all.filter((c) => !c.parentComment).map(tag)
+    const threaded = topLevel.map((c) => ({
+      ...c,
+      replies: all.filter((r) => r.parentComment === c._id).map(tag),
+    }))
+    return mock({ ...post, hasVoted: db.votes.includes(`post:${post._id}`), comments: threaded })
+  }
+  const { data } = await client.get(`/api/posts/${id}`)
+  return data
+}
+
+export async function createPost({ title, body, topic }) {
+  if (USING_MOCK) {
+    const db = readForum()
+    const post = {
+      _id: mockId(), title, body, topic,
+      author: mockUserName(), upvotes: 0, commentCount: 0,
+      createdAt: new Date().toISOString(),
+    }
+    db.posts.push(post)
+    writeForum(db)
+    return mock(post, 0)
+  }
+  const { data } = await client.post('/api/posts', { title, body, topic })
+  return data
+}
+
+/* ----- Comments ----- */
+export async function addComment(postId, { body, parentComment = null }) {
+  if (USING_MOCK) {
+    const db = readForum()
+    const post = db.posts.find((p) => p._id === postId)
+    if (!post) throw new Error('Post not found')
+    // Collapse replies-to-replies up to the top-level comment (one level only).
+    let parentId = null
+    if (parentComment) {
+      const parent = db.comments.find((c) => c._id === parentComment)
+      parentId = parent?.parentComment || parent?._id || null
+    }
+    const comment = {
+      _id: mockId(), post: postId, author: mockUserName(),
+      body, parentComment: parentId, upvotes: 0,
+      createdAt: new Date().toISOString(),
+    }
+    db.comments.push(comment)
+    post.commentCount += 1
+    writeForum(db)
+    return mock(comment, 0)
+  }
+  const { data } = await client.post(`/api/posts/${postId}/comments`, { body, parentComment })
+  return data
+}
+
+/* ----- Votes (toggle upvote on a post or comment) ----- */
+export async function vote(targetType, targetId) {
+  if (USING_MOCK) {
+    const db = readForum()
+    const key = `${targetType}:${targetId}`
+    const list = targetType === 'post' ? db.posts : db.comments
+    const item = list.find((x) => x._id === targetId)
+    if (!item) throw new Error('Target not found')
+    let voted
+    if (db.votes.includes(key)) {
+      db.votes = db.votes.filter((k) => k !== key)
+      item.upvotes = Math.max(0, item.upvotes - 1)
+      voted = false
+    } else {
+      db.votes.push(key)
+      item.upvotes += 1
+      voted = true
+    }
+    writeForum(db)
+    return mock({ voted, upvotes: item.upvotes }, 0)
+  }
+  const { data } = await client.post('/api/vote', { targetType, targetId })
+  return data
+}
+
+/* ----- Reports ----- */
+export async function report(targetType, targetId, reason) {
+  if (USING_MOCK) return mock({ ok: true }, 0) // mock mode: nothing to moderate
+  const { data } = await client.post('/api/report', { targetType, targetId, reason })
+  return data
+}

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk \"/'rank-structure': \\\\[/,/^  \\\\],/\" mockData.js)",
+      "Bash(node --check src/models/index.js)",
+      "Bash(node --check src/middleware/auth.js)",
+      "Bash(node --check src/routes/forum.js)",
+      "Bash(node --check src/server.js)",
+      "Bash(npx vite *)",
+      "Bash(node --input-type=module -e \"import\\('./src/routes/forum.js'\\).then\\(m => console.log\\('forum route loaded:', typeof m.default\\)\\).catch\\(e => { console.error\\('LOAD ERROR:', e.message\\); process.exit\\(1\\) }\\)\")",
+      "Bash(curl -s -o NUL -w \"local /health -> %{http_code}\\\\n\" http://localhost:4000/health --max-time 3)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); for \\(const k of ['MONGODB_URI','JWT_SECRET','CORS_ORIGIN','PORT']\\) console.log\\(k, process.env[k] ? 1 : 0\\)\")",
+      "Bash(curl -s -o NUL -w \"%{http_code}\\\\n\" http://localhost:4000/api/posts --max-time 3)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(process.env.CORS_ORIGIN\\)\")"
+    ]
+  }
+}

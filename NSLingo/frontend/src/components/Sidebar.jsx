@@ -6,6 +6,7 @@ const LINKS = [
   { to: '/learn', icon: '📘', label: 'Learn' },
   { to: '/translator', icon: '🌐', label: 'Translator' },
   { to: '/glossary', icon: '📖', label: 'Glossary' },
+  { to: '/forum', icon: '💬', label: 'Forum' },
   { to: '/achievements', icon: '🏆', label: 'Achievements' },
   { to: '/profile', icon: '👤', label: 'Profile' },
 ]

@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js'
 import contentRoutes from './routes/content.js'
 import progressRoutes from './routes/progress.js'
 import authRoutes from './routes/auth.js'
+import forumRoutes from './routes/forum.js'
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }))
 app.use('/', contentRoutes)            // /dictionary, /modules, /quiz, /translate, /badges
 app.use('/progress', progressRoutes)   // /progress (JWT)
 app.use('/auth', authRoutes)           // /auth/register, /auth/login
+app.use('/api', forumRoutes)           // /api/posts, /api/vote, /api/report (community forum, JWT)
 
 // ---- 404 + error handlers ----
 app.use((req, res) => res.status(404).json({ error: 'Not found' }))
